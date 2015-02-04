@@ -11,7 +11,7 @@ enum Attrib_IDs { vPosition = 0 };
 GLuint VAOs[NumVAOs];
 GLuint Buffers[NumBuffers];
 
-const GLuint NumVertices = 6;
+const GLuint NumVertices = 6; 
 
 int key_pressed = 0;
 
