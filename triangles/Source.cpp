@@ -10,7 +10,7 @@ enum Attrib_IDs { vPosition = 0 };
 
 GLuint VAOs[NumVAOs];
 GLuint Buffers[NumBuffers];
- 
+GLuint rainbow_triangle_points = 0;
 const GLuint NumVertices = 6; 
 
 int key_pressed = 0;
@@ -28,13 +28,7 @@ int z = 0;	//toggle for display of circle
 
 void init(void)
 {
-
-
 		//image info
-		glGenVertexArrays(NumVAOs, VAOs); //texbook pg 17
-
-		glBindVertexArray(VAOs[Triangles]); //text book pg 17
-
 		GLfloat Two_Triangles_vertices[NumVertices][2] = {
 			{ -0.90, -0.90 }, // Triangle 1
 			{ 0.85, -0.90 },
@@ -49,12 +43,27 @@ void init(void)
 			{ 0.30, -0.30 },
 			{ 0.30, 0.30 }
 		};
+		//end of image info
 
-		//below 3 lines: http://antongerdelan.net/opengl/vertexbuffers.html and http://www.swiftless.com/tutorials/opengl4/4-opengl-4-vao.html,
-		// http://stackoverflow.com/questions/15821969/what-is-the-proper-way-to-modify-opengl-vertex-buffer or https://www.youtube.com/watch?v=6WJPvCCCoeg&list=PL5SguJ-P5eq7H0EEnKmfn_fQzstEy-RZr&index=2
+		//returns 1 vertex array object 'names' in arrays. The 'names' here are just integer values starting from 1 - should be distinct
+		glGenVertexArrays(NumVAOs, VAOs);		//numvaos = 1 and VAOs[NumVAOs] = VAOs[1] 
+		cout <<"Name returned by glGenVertexArrays: "<< VAOs [0] << endl;
+
+		glBindVertexArray(VAOs[0]);		//the 'name' previously returned will be bound to current context
+
+
 		glGenBuffers(NumBuffers, Buffers);
 		glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_vertices), Two_Triangles_vertices, GL_STATIC_DRAW);
+
+		/*glGenBuffers(NumBuffers, &rainbow_triangle_points);
+		glBindBuffer(GL_ARRAY_BUFFER, rainbow_triangle_points);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(rainbow_triangle), rainbow_triangle, GL_STATIC_DRAW);*/
+
+		// if no VAO is bound to the context (if you call glBindVertexArray(0) or you do not bind a VAO at all) the following will fail
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
 
 		//shader info
 		ShaderInfo shaders[] = {
@@ -63,14 +72,8 @@ void init(void)
 			{ GL_NONE, NULL }
 		};
 	
-
 		GLuint program = LoadShaders(shaders);
 		glUseProgram(program);
-
-		// below two functions deal speciifically with associating variables in a vertx shader with data that we've stored in buffer 
-		//object ==> "shader plumbing" i.e you need to connect conduits between application and shader b/w various shader stages
-		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));//<---,		//page 25-26 marked
-		glEnableVertexAttribArray(vPosition); //<------------- vposition variable that is used by the shader in triangles.vert
 
 		glClearColor(0, 0, 0, 0);
 	
