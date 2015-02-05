@@ -4,12 +4,12 @@ using namespace std;
 #include "LoadShaders.h"
 
 // global vars
-enum VAO_IDs { Triangles, NumVAOs };
-enum Buffer_IDs { ArrayBuffer, NumBuffers };
-enum Attrib_IDs { vPosition = 0 };
+enum VAO_IDs { Triangles, NumVAOs=2 };
+enum Buffer_IDs { ArrayBuffer, NumBuffers =2 };
+enum Attrib_IDs { vPosition };
 
 GLuint VAOs[NumVAOs];
-GLuint Buffers[NumBuffers];
+GLuint Buffers[2];
 GLuint rainbow_triangle_points = 0;
 const GLuint NumVertices = 6; 
 
@@ -41,26 +41,30 @@ void init(void)
 		GLfloat rainbow_triangle[3][2] = {
 			{ -0.30, -0.30 }, //rainbow triangle
 			{ 0.30, -0.30 },
-			{ 0.30, 0.30 }
+			{ 0.0, 0.30 }
 		};
 		//end of image info
 
 		//returns 1 vertex array object 'names' in arrays. The 'names' here are just integer values starting from 1 - should be distinct
 		glGenVertexArrays(NumVAOs, VAOs);		//numvaos = 1 and VAOs[NumVAOs] = VAOs[1] 
-		cout <<"Name returned by glGenVertexArrays: "<< VAOs [0] << endl;
+		cout <<"Name returned by glGenVertexArrays: "<< VAOs [0] <<", "<< VAOs[1]<< endl;
 
+		glGenBuffers(2, Buffers);	//parameters: num of buffers, array
+		cout << "Name returned by glGenBuffers: " << Buffers[0] << ", " << Buffers[1] << endl;
+
+		
+		// first 2 triangles
 		glBindVertexArray(VAOs[0]);		//the 'name' previously returned will be bound to current context
-
-
-		glGenBuffers(NumBuffers, Buffers);
-		glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_vertices), Two_Triangles_vertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+		
 
-		/*glGenBuffers(NumBuffers, &rainbow_triangle_points);
-		glBindBuffer(GL_ARRAY_BUFFER, rainbow_triangle_points);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(rainbow_triangle), rainbow_triangle, GL_STATIC_DRAW);*/
-
-		// if no VAO is bound to the context (if you call glBindVertexArray(0) or you do not bind a VAO at all) the following will fail
+		//rainbow triangle
+		glBindVertexArray(VAOs[1]);
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(rainbow_triangle), rainbow_triangle, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(vPosition);
 		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
@@ -91,8 +95,12 @@ void display( void )
 
 	if (x == 1)
 	{
-		glBindVertexArray(VAOs[Triangles]);			//to select the vertex array that we want to use as vertex data	
-		glDrawArrays(GL_TRIANGLES, 0, NumVertices); //send the vertex data to opengl pipeline
+		glBindVertexArray(VAOs[0]);			//to select the vertex array that we want to use as vertex data	
+		glDrawArrays(GL_TRIANGLES, 0, 6); //send the vertex data to opengl pipeline
+
+
+		glBindVertexArray(VAOs[1]);			//to select the vertex array that we want to use as vertex data	
+		glDrawArrays(GL_TRIANGLES, 0, 3); //send the vertex data to opengl pipeline
 
 	}
 
