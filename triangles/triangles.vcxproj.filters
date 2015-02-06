@@ -29,5 +29,8 @@
     <None Include="triangles.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="triangles1.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

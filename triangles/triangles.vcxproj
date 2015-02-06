@@ -85,6 +85,7 @@
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="triangles1.frag" />
     <None Include="triangles.frag" />
     <None Include="triangles.vert" />
   </ItemGroup>

@@ -26,6 +26,20 @@ int z = 0;	//toggle for display of circle
 // init	-	all values that will be constant over the execution of the program are set in init
 //
 
+void useTheseShaders(char* vertexshader, char* fragmentshader)
+{
+	//!!!NOTE: compile and attach shaders first, then draw the VAOs
+	ShaderInfo shaders[] = {
+		{ GL_VERTEX_SHADER, vertexshader },
+		{ GL_FRAGMENT_SHADER, fragmentshader },
+		{ GL_NONE, NULL }
+	};
+
+	GLuint program = LoadShaders(shaders);
+	glUseProgram(program);
+
+}
+
 void init(void)
 {
 		//image info
@@ -68,7 +82,7 @@ void init(void)
 		glEnableVertexAttribArray(vPosition);
 		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
-
+		/*
 		//shader info
 		ShaderInfo shaders[] = {
 			{ GL_VERTEX_SHADER, "triangles.vert" },
@@ -78,6 +92,7 @@ void init(void)
 	
 		GLuint program = LoadShaders(shaders);
 		glUseProgram(program);
+		*/
 
 		glClearColor(0, 0, 0, 0);
 	
@@ -95,20 +110,28 @@ void display( void )
 
 	if (x == 1)
 	{
+
+		useTheseShaders("triangles.vert", "triangles.frag");
+
 		glBindVertexArray(VAOs[0]);			//to select the vertex array that we want to use as vertex data	
 		glDrawArrays(GL_TRIANGLES, 0, 6); //send the vertex data to opengl pipeline
 
+	}
+	
+	if (y == 1)
+	{
+		useTheseShaders("triangles.vert", "triangles1.frag");
 
 		glBindVertexArray(VAOs[1]);			//to select the vertex array that we want to use as vertex data	
 		glDrawArrays(GL_TRIANGLES, 0, 3); //send the vertex data to opengl pipeline
-
+	
 	}
 
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPushMatrix();
-	//cout << x << endl;
+	cout << x << endl;
 	glFlush();	//requests that any pending opengl calls are flushed to the opengl server and processed
 	
 }
@@ -139,6 +162,9 @@ void processNormalKeys(unsigned char key, int _x, int _y) {
 
 	if (key_pressed == 120)	    // toggle the two triangles
 		x = !x;
+
+	if (key_pressed == 121)
+		y = !y;
 
 	glutPostRedisplay();
 		
