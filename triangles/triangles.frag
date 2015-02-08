@@ -1,8 +1,9 @@
-#version 400 core
+#version 400
 
-out vec4 fColor;
+in vec3 Color;
 
+out vec3 fColor;
 void main()
 {
-	fColor = vec4( 0.0, 0.0, 1.0, 1.0 ); // blue is set to 1, opacity is set to 1
+	fColor = Color;
 }

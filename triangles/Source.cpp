@@ -3,15 +3,19 @@ using namespace std;
 #include "vgl.h"
 #include "LoadShaders.h"
 
+#define Pi 3.141592653589793238462
+
 // global vars
-enum VAO_IDs { Triangles, NumVAOs=2 };
-enum Buffer_IDs { ArrayBuffer, NumBuffers =2 };
-enum Attrib_IDs { vPosition };
+enum VAO_IDs { Triangles, NumVAOs=3 };
+enum Buffer_IDs { ArrayBuffer, NumBuffers = 6 };
+enum Attrib_IDs { vPosition, vColorPosition };
 
 GLuint VAOs[NumVAOs];
-GLuint Buffers[2];
+GLuint Buffers[NumBuffers];
 GLuint rainbow_triangle_points = 0;
 const GLuint NumVertices = 6; 
+
+GLuint numberOfTrianglesInCircle = 0;
 
 int key_pressed = 0;
 
@@ -20,15 +24,19 @@ int x = 1;	//toggle for display of 2 triangles
 int y = 1;	//toggle for display of the single triangle
 int z = 0;	//toggle for display of circle
 
+int c = 0;
+
+//misc
+GLfloat inputColorsOfTwoTriangles[3] = {0,0,1};
 
 //---------------------------------------------------------------------
 //
 // init	-	all values that will be constant over the execution of the program are set in init
 //
 
-void useTheseShaders(char* vertexshader, char* fragmentshader)
+GLuint useTheseShaders(char* vertexshader, char* fragmentshader)
 {
-	//!!!NOTE: compile and attach shaders first, then draw the VAOs
+	
 	ShaderInfo shaders[] = {
 		{ GL_VERTEX_SHADER, vertexshader },
 		{ GL_FRAGMENT_SHADER, fragmentshader },
@@ -36,13 +44,182 @@ void useTheseShaders(char* vertexshader, char* fragmentshader)
 	};
 
 	GLuint program = LoadShaders(shaders);
-	glUseProgram(program);
+
+	return program;
 
 }
 
-void init(void)
+void init(GLfloat* inputColorsOfTwoTriangles, GLfloat radius, GLint numberOfTriangles)
 {
-		//image info
+	numberOfTrianglesInCircle = numberOfTriangles;
+
+	//image info
+	GLfloat Two_Triangles_vertices[NumVertices][2] = {
+		{ -0.90, -0.90 }, // Triangle 1
+		{ 0.85, -0.90 },
+		{ -0.90, 0.85 },
+		{ 0.90, -0.85 }, // Triangle 2
+		{ 0.90, 0.90 },
+		{ -0.85, 0.90 }
+	};
+
+	GLfloat rainbow_triangle[3][2] = {
+		{ -0.30, -0.30 }, //rainbow triangle
+		{ 0.30, -0.30 },
+		{ 0.0, 0.30 }
+	};
+
+	GLint numberOfVertices = numberOfTriangles + 2;
+
+	GLfloat **circle_vertices;
+	GLfloat *values;
+
+	values = (GLfloat*)malloc(numberOfVertices * 2 * sizeof(GLfloat));
+	circle_vertices = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
+
+	for (int i = 0; i < numberOfVertices; i++)
+		circle_vertices[i] = &(values[i * 2]);
+
+	circle_vertices[0][0] = 0.0f;
+	circle_vertices[0][1] = 0.0f;
+
+	int count = 1;
+	for (GLdouble i = 0; i <= 360; i = i + (360/numberOfTriangles))
+	{
+		circle_vertices[count][0] = radius * sin((GLdouble)i * ((GLdouble) Pi / 180));
+		circle_vertices[count][1] = radius * cos((GLdouble)i * ((GLdouble)Pi / 180));
+
+		cout << count << endl;
+		count++;
+	}
+	
+	//end of image info
+
+	//color info [for the two triangles]
+	GLfloat Two_Triangles_Color_Data[NumVertices][3] = {
+
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] }
+				
+					};
+
+	GLfloat Rainbow_Triangle_Colors[NumVertices][3] = {
+			{ 1.0, 0.0, 0.0 },
+			{ 0.0, 1.0, 0.0 },
+			{ 0.0, 0.0, 1.0 },
+		};
+
+
+	GLfloat** circle_vertex_colors;
+	GLfloat *colorvalues;
+
+	colorvalues = (GLfloat*)malloc(numberOfVertices * 3 * sizeof(GLfloat));
+	circle_vertex_colors = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
+
+	for (int i = 0; i < numberOfTriangles + 2; i++)
+		circle_vertex_colors[i] = &(colorvalues[i*3]);
+
+	circle_vertex_colors[0][0] = inputColorsOfTwoTriangles[0];
+	circle_vertex_colors[0][1] = inputColorsOfTwoTriangles[1];
+	circle_vertex_colors[0][2] = inputColorsOfTwoTriangles[2];
+
+	count = 1;
+	for (int i = 0; i <= 360; i = i + (360 / numberOfTriangles))
+	{
+		circle_vertex_colors[count][0] = inputColorsOfTwoTriangles[0];
+		circle_vertex_colors[count][1] = inputColorsOfTwoTriangles[1];
+		circle_vertex_colors[count][2] = inputColorsOfTwoTriangles[2];
+
+		cout << circle_vertex_colors[count][0] << " " << circle_vertex_colors[count][1] << " " << circle_vertex_colors[count][2] << endl;
+
+
+		count++;
+	}
+	
+	
+
+	//end of color info
+
+
+		//returns 1 vertex array object 'names' in arrays. The 'names' here are just integer values starting from 1 - will be unique
+		glGenVertexArrays(NumVAOs, VAOs);
+	
+		glGenBuffers(NumBuffers, Buffers);
+	
+		
+		// first 2 triangles
+		glBindVertexArray(VAOs[0]);		//the 'name' previously returned will be bound to current context
+
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_vertices), Two_Triangles_vertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[1]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_Color_Data), Two_Triangles_Color_Data, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vColorPosition);
+		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0)); 
+
+		
+		//rainbow triangle
+		glBindVertexArray(VAOs[1]);
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[2]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(rainbow_triangle), rainbow_triangle, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[3]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Rainbow_Triangle_Colors), Rainbow_Triangle_Colors, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vColorPosition);
+		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		//circle
+
+		glBindVertexArray(VAOs[2]);
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[4]);
+		glBufferData(GL_ARRAY_BUFFER, ((numberOfTrianglesInCircle+2) * 2 * sizeof(GLfloat)), *circle_vertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[5]);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * 3 * sizeof(GLfloat), *circle_vertex_colors, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vColorPosition);
+		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		
+	
+}
+
+
+//---------------------------------------------------------------------
+//
+// display
+//
+void display( void )
+{
+	glClearColor(0, 0, 0, 0);			//<---moved it back from init
+	glClear(GL_COLOR_BUFFER_BIT);		//<----'
+
+	if (x == 1 && c==0)
+	{	
+		
+
+		GLuint program = useTheseShaders("triangles.vert", "triangles.frag");
+    	glUseProgram(program);
+		
+
+		glBindVertexArray(VAOs[0]);			//to select the vertex array that we want to use as vertex data	
+		glDrawArrays(GL_TRIANGLES, 0, 6); //send the vertex data to opengl pipeline
+
+	}
+
+	if (c == 1)
+	{
 		GLfloat Two_Triangles_vertices[NumVertices][2] = {
 			{ -0.90, -0.90 }, // Triangle 1
 			{ 0.85, -0.90 },
@@ -52,86 +229,60 @@ void init(void)
 			{ -0.85, 0.90 }
 		};
 
-		GLfloat rainbow_triangle[3][2] = {
-			{ -0.30, -0.30 }, //rainbow triangle
-			{ 0.30, -0.30 },
-			{ 0.0, 0.30 }
+		GLfloat Two_Triangles_Color_Data[NumVertices][3] = {
+
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{ inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] }
+
 		};
-		//end of image info
 
-		//returns 1 vertex array object 'names' in arrays. The 'names' here are just integer values starting from 1 - should be distinct
-		glGenVertexArrays(NumVAOs, VAOs);		//numvaos = 1 and VAOs[NumVAOs] = VAOs[1] 
-		cout <<"Name returned by glGenVertexArrays: "<< VAOs [0] <<", "<< VAOs[1]<< endl;
-
-		glGenBuffers(2, Buffers);	//parameters: num of buffers, array
-		cout << "Name returned by glGenBuffers: " << Buffers[0] << ", " << Buffers[1] << endl;
-
-		
-		// first 2 triangles
 		glBindVertexArray(VAOs[0]);		//the 'name' previously returned will be bound to current context
+
 		glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_vertices), Two_Triangles_vertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(vPosition);
 		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-		
 
-		//rainbow triangle
-		glBindVertexArray(VAOs[1]);
 		glBindBuffer(GL_ARRAY_BUFFER, Buffers[1]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(rainbow_triangle), rainbow_triangle, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(vPosition);
-		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-		/*
-		//shader info
-		ShaderInfo shaders[] = {
-			{ GL_VERTEX_SHADER, "triangles.vert" },
-			{ GL_FRAGMENT_SHADER, "triangles.frag" },
-			{ GL_NONE, NULL }
-		};
-	
-		GLuint program = LoadShaders(shaders);
-		glUseProgram(program);
-		*/
-
-		glClearColor(0, 0, 0, 0);
-	
-}
-
-
-//---------------------------------------------------------------------
-//
-// display - virtually same in all opengl applications
-//
-void display( void )
-{
-	glClearColor(0, 0, 0, 0);			//<---moved it back from init
-	glClear(GL_COLOR_BUFFER_BIT);		//<----'
-
-	if (x == 1)
-	{
-
-		useTheseShaders("triangles.vert", "triangles.frag");
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_Color_Data), Two_Triangles_Color_Data, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vColorPosition);
+		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
 		glBindVertexArray(VAOs[0]);			//to select the vertex array that we want to use as vertex data	
 		glDrawArrays(GL_TRIANGLES, 0, 6); //send the vertex data to opengl pipeline
-
 	}
 	
 	if (y == 1)
 	{
-		useTheseShaders("triangles.vert", "triangles1.frag");
+		GLuint program = useTheseShaders("triangles.vert", "triangles.frag");
+		glUseProgram(program);
 
-		glBindVertexArray(VAOs[1]);			//to select the vertex array that we want to use as vertex data	
-		glDrawArrays(GL_TRIANGLES, 0, 3); //send the vertex data to opengl pipeline
+		glBindVertexArray(VAOs[1]);			
+		glDrawArrays(GL_TRIANGLES, 0, 3); 
 	
 	}
 
 
+	if (z == 1)
+	{
+		GLuint program = useTheseShaders("triangles.vert", "triangles.frag");
+		glUseProgram(program);
+
+		glBindVertexArray(VAOs[2]);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfTrianglesInCircle + 2);
+
+	}
+
+	
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glPushMatrix();
-	cout << x << endl;
 	glFlush();	//requests that any pending opengl calls are flushed to the opengl server and processed
 	
 }
@@ -158,14 +309,50 @@ void processNormalKeys(unsigned char key, int _x, int _y) {
 	if (key_pressed == 115)		//wireframe off i.e. solid surface
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	}
 
 	if (key_pressed == 120)	    // toggle the two triangles
 		x = !x;
 
-	if (key_pressed == 121)
+	if (key_pressed == 121)		
 		y = !y;
+	
+	if (key_pressed == 122)
+		z = !z;
 
+	if (key_pressed == 99)
+	{
+		c = 1;
+		for (;;)
+		{
+			cout << "Enter the colors for the two triangles :" << endl;
+
+			cout << "Red :";
+			cin >> inputColorsOfTwoTriangles[0];
+
+			cout << "Green :";
+			cin >> inputColorsOfTwoTriangles[1];
+
+			cout << "Blue :";
+			cin >> inputColorsOfTwoTriangles[2];
+			cout << endl;
+
+			int flag = 1;
+
+			for (int i = 0; i < 3; i++)
+				if (inputColorsOfTwoTriangles[i] < 0 || inputColorsOfTwoTriangles[i]>1)
+				{
+					cout << "Invalid values. Enter values in the range [0,1]" << endl;
+					flag = 0;
+					break;
+				}
+
+			if (flag == 1)
+				break;
+
+		}
+	}
 	glutPostRedisplay();
 		
 }
@@ -181,6 +368,19 @@ int main(int argc, char** argv)
 	glewExperimental = GL_TRUE; //********* added
 
 	glutInit(&argc, argv);
+
+
+	GLfloat radiusOfCircle;
+
+	GLint numberOfTriangles;
+
+
+	cout << "Enter the radius for the circle :"<<endl;
+	cin >> radiusOfCircle;
+
+	cout << "Enter the number of triangles" << endl;
+	cin >> numberOfTriangles;
+	
 	glutInitDisplayMode(GLUT_RGBA);
 	glutInitWindowSize(512, 512);
 	glutInitContextVersion(4, 3);
@@ -194,8 +394,10 @@ int main(int argc, char** argv)
 	}
 
 	
-	init();
-	glutDisplayFunc(display);	//<-- called the 'callback' function
-	glutKeyboardFunc(processNormalKeys);//<--'
+	init(inputColorsOfTwoTriangles, radiusOfCircle, numberOfTriangles);
+
+	glutDisplayFunc(display);
+	glutKeyboardFunc(processNormalKeys);
 	glutMainLoop();
 }
+
