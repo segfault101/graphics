@@ -15,7 +15,7 @@ GLuint Buffers[NumBuffers];
 GLuint rainbow_triangle_points = 0;
 const GLuint NumVertices = 6; 
 
-GLuint numberOfTrianglesInCircle = 0;
+//GLuint numberOfTrianglesInCircle = 0;
 
 int key_pressed = 0;
 
@@ -25,9 +25,12 @@ int y = 1;	//toggle for display of the single triangle
 int z = 0;	//toggle for display of circle
 
 int c = 0;
+int g = 0;
 
 //misc
 GLfloat inputColorsOfTwoTriangles[3] = {0,0,1};
+GLfloat radiusOfCircle = 0;
+GLint numberOfTriangles = 0;
 
 //---------------------------------------------------------------------
 //
@@ -49,9 +52,9 @@ GLuint useTheseShaders(char* vertexshader, char* fragmentshader)
 
 }
 
-void init(GLfloat* inputColorsOfTwoTriangles, GLfloat radius, GLint numberOfTriangles)
+void init()
 {
-	numberOfTrianglesInCircle = numberOfTriangles;
+	
 
 	//image info
 	GLfloat Two_Triangles_vertices[NumVertices][2] = {
@@ -69,43 +72,23 @@ void init(GLfloat* inputColorsOfTwoTriangles, GLfloat radius, GLint numberOfTria
 		{ 0.0, 0.30 }
 	};
 
-	GLint numberOfVertices = numberOfTriangles + 2;
-
-	GLfloat **circle_vertices;
-	GLfloat *values;
-
-	values = (GLfloat*)malloc(numberOfVertices * 2 * sizeof(GLfloat));
-	circle_vertices = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
-
-	for (int i = 0; i < numberOfVertices; i++)
-		circle_vertices[i] = &(values[i * 2]);
-
-	circle_vertices[0][0] = 0.0f;
-	circle_vertices[0][1] = 0.0f;
-
-	int count = 1;
-	for (GLdouble i = 0; i <= 360; i = i + (360/numberOfTriangles))
-	{
-		circle_vertices[count][0] = radius * sin((GLdouble)i * ((GLdouble) Pi / 180));
-		circle_vertices[count][1] = radius * cos((GLdouble)i * ((GLdouble)Pi / 180));
-
-		cout << count << endl;
-		count++;
-	}
+	/*
 	
+	*/
+
 	//end of image info
 
 	//color info [for the two triangles]
 	GLfloat Two_Triangles_Color_Data[NumVertices][3] = {
 
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
+			{ 0, 0, 1 },
+			{ 0, 0, 1 },
+			{ 0, 0, 1 },
 
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] },
-			{inputColorsOfTwoTriangles[0], inputColorsOfTwoTriangles[1], inputColorsOfTwoTriangles[2] }
-				
+			{ 0, 0, 1 },
+			{ 0, 0, 1 },
+			{ 0, 0, 1 },
+
 					};
 
 	GLfloat Rainbow_Triangle_Colors[NumVertices][3] = {
@@ -114,33 +97,9 @@ void init(GLfloat* inputColorsOfTwoTriangles, GLfloat radius, GLint numberOfTria
 			{ 0.0, 0.0, 1.0 },
 		};
 
+	/*
 
-	GLfloat** circle_vertex_colors;
-	GLfloat *colorvalues;
-
-	colorvalues = (GLfloat*)malloc(numberOfVertices * 3 * sizeof(GLfloat));
-	circle_vertex_colors = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
-
-	for (int i = 0; i < numberOfTriangles + 2; i++)
-		circle_vertex_colors[i] = &(colorvalues[i*3]);
-
-	circle_vertex_colors[0][0] = inputColorsOfTwoTriangles[0];
-	circle_vertex_colors[0][1] = inputColorsOfTwoTriangles[1];
-	circle_vertex_colors[0][2] = inputColorsOfTwoTriangles[2];
-
-	count = 1;
-	for (int i = 0; i <= 360; i = i + (360 / numberOfTriangles))
-	{
-		circle_vertex_colors[count][0] = inputColorsOfTwoTriangles[0];
-		circle_vertex_colors[count][1] = inputColorsOfTwoTriangles[1];
-		circle_vertex_colors[count][2] = inputColorsOfTwoTriangles[2];
-
-		cout << circle_vertex_colors[count][0] << " " << circle_vertex_colors[count][1] << " " << circle_vertex_colors[count][2] << endl;
-
-
-		count++;
-	}
-	
+	*/
 	
 
 	//end of color info
@@ -179,17 +138,8 @@ void init(GLfloat* inputColorsOfTwoTriangles, GLfloat radius, GLint numberOfTria
 		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
 
 		//circle
-
-		glBindVertexArray(VAOs[2]);
-		glBindBuffer(GL_ARRAY_BUFFER, Buffers[4]);
-		glBufferData(GL_ARRAY_BUFFER, ((numberOfTrianglesInCircle+2) * 2 * sizeof(GLfloat)), *circle_vertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(vPosition);
-		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-		glBindBuffer(GL_ARRAY_BUFFER, Buffers[5]);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * 3 * sizeof(GLfloat), *circle_vertex_colors, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(vColorPosition);
-		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+		/*
+		 */
 
 		
 	
@@ -218,7 +168,7 @@ void display( void )
 
 	}
 
-	if (c == 1)
+	if (x == 1 && c == 1)
 	{
 		GLfloat Two_Triangles_vertices[NumVertices][2] = {
 			{ -0.90, -0.90 }, // Triangle 1
@@ -243,11 +193,11 @@ void display( void )
 
 		glBindVertexArray(VAOs[0]);		//the 'name' previously returned will be bound to current context
 
-		glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
+/*		glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_vertices), Two_Triangles_vertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(vPosition);
 		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
+*/
 		glBindBuffer(GL_ARRAY_BUFFER, Buffers[1]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Two_Triangles_Color_Data), Two_Triangles_Color_Data, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(vColorPosition);
@@ -268,13 +218,78 @@ void display( void )
 	}
 
 
-	if (z == 1)
+	if (z == 1 && g == 1)
 	{
+		GLint numberOfVertices = numberOfTriangles + 2;
+
+		//image info
+		GLfloat **circle_vertices;
+		GLfloat *values;
+
+		values = (GLfloat*)malloc(numberOfVertices * 2 * sizeof(GLfloat));
+		circle_vertices = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
+
+		for (int i = 0; i < numberOfVertices; i++)
+			circle_vertices[i] = &(values[i * 2]);
+
+		circle_vertices[0][0] = 0.0f;
+		circle_vertices[0][1] = 0.0f;
+
+		int count = 1;
+		for (GLdouble i = 0; i <= 360; i = i + GLdouble(360 / (GLdouble)numberOfTriangles))
+		{
+			circle_vertices[count][0] = radiusOfCircle * sin((GLdouble)i * ((GLdouble)Pi / 180));
+			circle_vertices[count][1] = radiusOfCircle * cos((GLdouble)i * ((GLdouble)Pi / 180));
+
+			cout << count << endl;
+			count++;
+		}
+
+		//color info
+		GLfloat** circle_vertex_colors;
+		GLfloat *colorvalues;
+
+		colorvalues = (GLfloat*)malloc(numberOfVertices * 3 * sizeof(GLfloat));
+		circle_vertex_colors = (GLfloat**)malloc(numberOfVertices * sizeof(GLfloat*));
+
+		for (int i = 0; i < numberOfVertices; i++)
+			circle_vertex_colors[i] = &(colorvalues[i * 3]);
+
+		circle_vertex_colors[0][0] = inputColorsOfTwoTriangles[0];
+		circle_vertex_colors[0][1] = inputColorsOfTwoTriangles[1];
+		circle_vertex_colors[0][2] = inputColorsOfTwoTriangles[2];
+
+		count = 1;
+		for (GLdouble i = 0; i <= 360; i = i + GLdouble(360 / (GLdouble)numberOfTriangles))
+		{
+			circle_vertex_colors[count][0] = inputColorsOfTwoTriangles[0];
+			circle_vertex_colors[count][1] = inputColorsOfTwoTriangles[1];
+			circle_vertex_colors[count][2] = inputColorsOfTwoTriangles[2];
+
+			cout << circle_vertex_colors[count][0] << " " << circle_vertex_colors[count][1] << " " << circle_vertex_colors[count][2] << endl;
+
+
+			count++;
+		}
+
+		glBindVertexArray(VAOs[2]);
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[4]);
+		glBufferData(GL_ARRAY_BUFFER, (numberOfVertices * 2 * sizeof(GLfloat)), *circle_vertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+		glBindBuffer(GL_ARRAY_BUFFER, Buffers[5]);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * 3 * sizeof(GLfloat), *circle_vertex_colors, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(vColorPosition);
+		glVertexAttribPointer(vColorPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+
+
+		glBindVertexArray(VAOs[2]);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfVertices);
+
 		GLuint program = useTheseShaders("triangles.vert", "triangles.frag");
 		glUseProgram(program);
 
-		glBindVertexArray(VAOs[2]);
-		glDrawArrays(GL_TRIANGLE_FAN, 0, numberOfTrianglesInCircle + 2);
 
 	}
 
@@ -353,6 +368,18 @@ void processNormalKeys(unsigned char key, int _x, int _y) {
 
 		}
 	}
+
+	if (key_pressed == 103)
+	{
+		g = 1;
+
+			cout << "Enter the radius for the circle :" << endl;
+			cin >> radiusOfCircle;
+
+			cout << "Enter the number of triangles" << endl;
+			cin >> numberOfTriangles;
+
+	}
 	glutPostRedisplay();
 		
 }
@@ -375,12 +402,6 @@ int main(int argc, char** argv)
 	GLint numberOfTriangles;
 
 
-	cout << "Enter the radius for the circle :"<<endl;
-	cin >> radiusOfCircle;
-
-	cout << "Enter the number of triangles" << endl;
-	cin >> numberOfTriangles;
-	
 	glutInitDisplayMode(GLUT_RGBA);
 	glutInitWindowSize(512, 512);
 	glutInitContextVersion(4, 3);
@@ -394,7 +415,7 @@ int main(int argc, char** argv)
 	}
 
 	
-	init(inputColorsOfTwoTriangles, radiusOfCircle, numberOfTriangles);
+	init();
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(processNormalKeys);
